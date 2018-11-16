@@ -40,14 +40,19 @@ public class Main {
             }
             System.out.println("Do you want to play one more time?");
         } while ("y".equals(scan.next()));
-        for (GameResult r : results) {
-            System.out.printf("Player %s has done %d tries and it took %.2f sec\n",
-                    r.name,
-                    r.triesCount,
-                    r.duration / 1000.0);
-        }
-
+        showResults();
         saveResults();
+    }
+
+    private static void showResults() {
+        results.stream()
+                .sorted(Comparator.<GameResult>comparingInt(r -> r.triesCount)
+                                  .<GameResult>thenComparingLong(r -> r.duration))
+                .limit(3)
+                .forEach(r -> System.out.printf("Player %s has done %d tries and it took %.2f sec\n",
+                        r.name,
+                        r.triesCount,
+                        r.duration / 1000.0));
     }
 
     private static int readUserNum() {
@@ -69,9 +74,22 @@ public class Main {
     private static void saveResults() {
         try (PrintWriter fileOut = new PrintWriter(RESULTS_FILE)) {
 
-            for (GameResult r : results) {
-                fileOut.printf("%s %d %d\n", r.name, r.triesCount, r.duration);
-            }
+            int skipCount = results.size() - 5;
+
+            results.stream()
+                    .skip(skipCount)
+                    .forEach(r -> fileOut.printf("%s %d %d\n", r.name, r.triesCount, r.duration));
+
+//            boolean have5 = results.stream()
+//                    .filter(r -> r.name.equals("Dima"))
+//                    .anyMatch(r -> r.triesCount == 5);
+
+//            for (GameResult r : results) {
+//                if (skipCount <= 0) {
+//                    fileOut.printf("%s %d %d\n", r.name, r.triesCount, r.duration);
+//                }
+//                skipCount--;
+//            }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
