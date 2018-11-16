@@ -1,20 +1,25 @@
 package lv.ctco.guessnum;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class Main {
+    public static final File RESULTS_FILE = new File("results.txt");
     static Scanner scan = new Scanner(System.in);
     static Random rand = new Random();
     static List<GameResult> results = new ArrayList<>();
 
     public static void main(String[] args) {
+        loadResults();
         do {
             System.out.println("What is your name?");
             String name = scan.next();
             System.out.println("Hello, " + name + "!");
             int myNum = rand.nextInt(100) + 1;
             System.out.println("Spoiler: " + myNum);
-             long t1 = System.currentTimeMillis();
+            long t1 = System.currentTimeMillis();
 
             for (int i = 1; i <= 10; i++) {
                 System.out.println("Guess my number");
@@ -41,6 +46,8 @@ public class Main {
                     r.triesCount,
                     r.duration / 1000.0);
         }
+
+        saveResults();
     }
 
     private static int readUserNum() {
@@ -56,6 +63,35 @@ public class Main {
                 scan.next();
                 System.out.println("You are cheater ");
             }
+        }
+    }
+
+    private static void saveResults() {
+        try (PrintWriter fileOut = new PrintWriter(RESULTS_FILE)) {
+
+            for (GameResult r : results) {
+                fileOut.printf("%s %d %d\n", r.name, r.triesCount, r.duration);
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void loadResults() {
+        try (Scanner in = new Scanner(RESULTS_FILE)) {
+
+            while (in.hasNext()) {
+                GameResult gr = new GameResult();
+                gr.name = in.next();
+                gr.triesCount = in.nextInt();
+                gr.duration = in.nextLong();
+
+                results.add(gr);
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
     }
 }
